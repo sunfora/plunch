@@ -1,5 +1,6 @@
 {
     "require" : {
-        "vkcom/vk-php-sdk" : "5.101.*"
+        "vkcom/vk-php-sdk" : "5.101.*",
+        "parsica-php/parsica": "0.8.1"
     }
 }

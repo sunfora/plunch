@@ -26,6 +26,8 @@ input {
 <?
 function display(Callable $func): void {
     echo '<hr class="dotted" /><pre>';
+    ob_start();
     echo $func();
+    echo htmlentities(ob_get_clean());
     echo '</pre><hr class="dotted" />';
 }

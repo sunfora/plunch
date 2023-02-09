@@ -1,39 +1,29 @@
-
 <?
 require "api.php";
+require_once "MariaDB.php";
+require_once "Interpreter.php";
+require_once "Core.php";
 require "cmd-form.php";
-?>
 
-<?
-// ok, I think it is a time for a first commit
-interface DataBase 
-{
-    function set_user_name(string $id, string $name): void;
-    function get_user_name(string $id): string; 
-}
-/*
-final class MariaDB implements DataBase {
+$connection = new MariaDB("mariadb", "root", "root", "hello");
 
-    private string $host;
-    private string $user;
-    private string $pass;
-    private string $name;
-    private mysqli $connection;
+$core = new Core($connection);
 
-    public function __constructor($host, $user, $pass, $name) {
-        $this->host = $host;
-        $this->user = $user;
-        $this->pass = $pass;
-        $this->name = $name;
+$syntax = [
+    "idle" => [[], []],
+    "get" => [["get"], ["identifier"]],
+    "set" => [["set"], ["identifier", "quoted_string"]]
+];
+
+$interpreter = new Interpreter($syntax, $core);
+
+display(function () use ($interpreter) {
+    if ($_POST) {
+        ["cmd" => $cmd] = $_POST;
+        try {
+            echo $interpreter->execute($cmd) . "\n";
+        } catch (Throwable $e) {
+            echo $e->getMessage() . "\n";
+        }
     }
-
-    private 
-
-    public function set_user_name(string $id, string $name): void {
-        $connection->query("CALL set_user_name(\"$id\", \"$name\")")
-    }
-}
-*/
-display(function () { 
-//    var_dump(new mysqli("mariadb", "root", "root", "hello"));
 });
