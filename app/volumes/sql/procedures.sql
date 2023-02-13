@@ -1,28 +1,22 @@
-USE hello;
+USE plunch;
 
 DELIMITER ;;
 
-CREATE OR REPLACE PROCEDURE
-    set_user_name(
-        IN dialog_id CHAR (128), 
-        IN user_name CHAR (128)
-    )
+CREATE OR REPLACE FUNCTION 
+    `video/id`(user CHAR(128), link VARCHAR(2048)) RETURNS INT
     BEGIN
-        INSERT INTO users 
-            VALUE (dialog_id, user_name)
-        ON DUPLICATE KEY UPDATE
-            users.user_name = user_name;
+        SELECT id INTO @id FROM `video/videos` AS t
+            WHERE t.user=user AND t.link=link;
+        RETURN @id;
     END;
 ;;
 
-CREATE OR REPLACE PROCEDURE 
-    get_user_name(
-        IN dialog_id CHAR (128)
-    )
+CREATE OR REPLACE FUNCTION 
+    `video/link`(user CHAR(128), id INT) RETURNS VARCHAR(2048)
     BEGIN
-        SELECT (user_name) FROM users
-           WHERE (users.dialog_id = dialog_id);
+        SELECT link INTO @link FROM `video/videos` AS t
+            WHERE t.user=user AND t.id=id;
+        RETURN @link;
     END;
 ;;
-
 DELIMITER ;

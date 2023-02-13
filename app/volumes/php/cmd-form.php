@@ -19,6 +19,7 @@ input {
 </style>
 
 <form method="post">
+    <input type="text" name="user_name"/>
     <textarea name="cmd"></textarea>
     <input type="submit" value=">>>" />
 </form>

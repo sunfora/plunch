@@ -1,10 +1,11 @@
 <?
-require_once "/vendor/autoload.php";
+require "/vendor/autoload.php";
 require_once "Parsers.php";
 
 use Parsica\Parsica as Parsica;
 
-final class Interpreter {
+final class Interpreter 
+{
     public function __construct(private Array $syntax, private $core) {
         assert((bool)$syntax, "Error: empty syntax");
     }
@@ -40,13 +41,12 @@ final class Interpreter {
         $known_command = false;
 
         foreach ($this->syntax as $method => [$cmd_spec, $args_spec]) {
-            $call = $this->core->$method(...);
             $full_parser = static::parser_from($cmd_spec, $args_spec);
             $result = $full_parser->run($stream);
             
             if ($result->isSuccess()) {
                 [1 => $args] = $result->output();
-                return $call(...$args);
+                return $this->core->$method(...$args);
             }
 
             // just trying to get better error messages from this point

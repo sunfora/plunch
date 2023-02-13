@@ -1,9 +1,8 @@
 <?
 namespace Parsers;
 
-require_once "/vendor/autoload.php";
-use Parsica\Parsica as Parsica;
-
+require "/vendor/autoload.php";
+use \Parsica\Parsica as Parsica;
 
 /*
  * Parses zero or up to specified number 
@@ -26,6 +25,20 @@ function repeat_bounded(int $times, Parsica\Parser $parser): Parsica\Parser {
             return $parse_result;
         }
     );
+}
+
+function collect_with_spaces(...$parsers): Parsica\Parser {
+    if (! $parsers) {
+        return Parsica\pure([]);
+    }
+
+    $n = count($parsers);
+
+    $add_spaces = fn ($parser) => $parser->append(Parsica\skipHSpace1());
+    $mapped_parsers = array_map($add_spaces, $parsers);
+    $mapped_parsers[$n - 1] = $parsers[$n - 1];
+    
+    return Parsica\collect(...$mapped_parsers); 
 }
 
 const MAX_STRING_LENGTH = 128;
@@ -76,17 +89,14 @@ function identifier(): Parsica\Parser {
     return $parser->label("identifier");
 }
 
-function collect_with_spaces(...$parsers): Parsica\Parser {
-    if (! $parsers) {
-        return Parsica\pure([]);
-    }
+const LISTABLE = [
+    "videos"
+];
 
-    $n = count($parsers);
-
-    $add_spaces = fn ($parser) => $parser->append(Parsica\skipHSpace1());
-    $mapped_parsers = array_map($add_spaces, $parsers);
-    $mapped_parsers[$n - 1] = $parsers[$n - 1];
-    
-    return Parsica\collect(...$mapped_parsers); 
+function listable(): Parsica\Parser {
+    return Parsica\any(...array_map(Parsica\string(...), LISTABLE));
 }
 
+function video_id(): Parsica\Parser {
+    return Parsica\any(identifier(), quoted_string());
+}

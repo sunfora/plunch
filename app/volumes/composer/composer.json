@@ -1,6 +1,7 @@
 {
     "require" : {
         "vkcom/vk-php-sdk" : "5.101.*",
-        "parsica-php/parsica": "0.8.1"
+        "parsica-php/parsica": "0.8.1",
+        "sergeytsalkov/meekrodb": "*"
     }
 }
