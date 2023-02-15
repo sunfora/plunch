@@ -1,13 +1,20 @@
 <?
+namespace Plunch;
 require "/vendor/autoload.php";
 require_once "Table.php";
 require_once "Video.php";
+require_once "CRUD/Videos.php";
+require_once "User.php";
 
-use Videos\Video as Video;
+use Plunch\Util\Table as Table;
 
 final class Core {
 
-    public function __construct(private $db, private string $user) {}
+    private CRUD\Videos $videos;
+
+    public function __construct(private User $user, private $db) {
+        $this->videos = new CRUD\Videos($user, $db);    
+    }
 
 
     public function idle() {
@@ -15,7 +22,7 @@ final class Core {
     }
 
     public function list_videos() {
-        $videos = Videos\load_all($this->user, $this->db); 
+        $videos = $this->videos->read_all(); 
         
         $repr = function ($video) {
             $indicator = $video->is_watched()? '[*]' : '[ ]';
@@ -33,31 +40,21 @@ final class Core {
     }
 
     public function video_add(string $link) {
-        $video = new Video($link);
-        $video->insert($this->user, $this->db);
+        $this->videos->create(new Video($link));
         return "added video $link"; 
     }
 
     public function video_delete(string $link) {
-        $video = new Video($link);
-        $video->delete($this->user, $this->db);
+        $video = $this->videos->read(new Video($link));
+        $this->videos->delete($video);
         return "deleted video $link"; 
     }
 
     private function video_update(string $link, callable $act) {
-        $video = Video::load(
-            link: $link, 
-            user: $this->user, 
-            db: $this->db
-        );
-       
+        $video = $this->videos->read(new Video($link));
+        $old = clone $video;
         $result = $act($video);
-       
-        $video->update(
-            dest: $link, 
-            user: $this->user, 
-            db: $this->db
-        );
+        $this->videos->update($old, $video);
         return $result;
     }
 

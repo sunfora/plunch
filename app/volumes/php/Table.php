@@ -1,5 +1,5 @@
 <?
-namespace Table;
+namespace Plunch\Util\Table;
 // a collection of methods to work with tables
 
 function descheme(Array $table, Array $schema) {    

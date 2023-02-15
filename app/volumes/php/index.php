@@ -2,6 +2,8 @@
 require "api.php";
 require_once "Interpreter.php";
 require_once "Core.php";
+require_once "CRUD/Users.php";
+require_once "User.php";
 require "cmd-form.php";
 
 if (! $_POST) {
@@ -17,7 +19,10 @@ display(function () use ($connection) {
     print_r([...$connection->query("SHOW TABLES")]);
 });
 
-$core = new Core($connection, $user_name);
+$users = new Plunch\CRUD\Users($connection);
+$user = $users->read(new Plunch\User($user_name));
+
+$core = new Plunch\Core($user, $connection);
 // need modules :(  
 
 $video_syntax = [
