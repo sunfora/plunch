@@ -10,10 +10,13 @@ final class Users {
 
     public function __construct(private $db) {}
     
+    private function pinned_videos_of(User $user) {
+        return new PinnedVideos($user, $this->db); 
+    }
+
     public function read(User $user) {
-        $pinned_videos = new PinnedVideos($user, $this->db);
         $name = $user->name();
-        $video = $pinned_videos->read_if_exists();
+        $video = $this->pinned_videos_of($user)->read_if_exists();
         return new User($name, $video);
     }
 }

@@ -2,6 +2,7 @@
 namespace Plunch;
 
 require_once "Video.php";
+require_once "CRUD/DataBaseLayerException.php";
 
 final class User {
 
@@ -15,7 +16,15 @@ final class User {
     }
 
     public function pinned() {
+        if (! $this->has_pinned() ) {
+            throw new CRUD\NoSuchDataException("nothing is pinned");
+        }
         return $this->pinned;
+    }
+
+    public function unpin() {
+        $this->pinned = null;
+        return $this;
     }
 
     public function pin(Video $video) {

@@ -3,7 +3,9 @@ namespace Plunch\CRUD;
 
 require_once "User.php";
 require_once "CRUD/DataBaseLayerException.php";
+require_once "Video.php";
 
+use Plunch\Video as Video;
 use Plunch\User as User;
 
 final class PinnedVideos {
@@ -70,6 +72,15 @@ final class PinnedVideos {
         return $this->db->delete(
             static::TABLE, "user=%s", $this->user->name()
         );
+    }
+
+    public function actualize() {
+        $video = $this->read_if_exists();
+        if ($video !== null) {
+            $this->user->pin($video);
+        } else {
+            $this->user->unpin();
+        }
     }
 }
 

@@ -48,14 +48,40 @@ $video_syntax = [
     ]
 ];
 
+$pinned_syntax = [
+    "delete_pinned" => [
+        ["delete"], []
+    ],
+    "watch_pinned" => [
+        ["watch"], []
+    ],
+    "unwatch_pinned" => [
+        ["unwatch"], []
+    ],
+    "rename_pinned" => [
+        ["rename"], ["quoted_string"]
+    ],
+    "pin" => [
+        ["pin"], ["quoted_string"]
+    ],
+    "unpin" => [ 
+        ["unpin"], []
+    ]
+    ,
+    "pick" => [
+        ["pick"], []
+    ]
+];
+
 $syntax = [
     "idle" => [
         [], []
     ],
-    "list" => [
-        ["list"], ["listable"]
+    "list_videos" => [
+        ["list", "videos"], []
     ],
-    ...$video_syntax,    
+    ...$video_syntax,
+    ...$pinned_syntax
 ];
 
 $interpreter = new Interpreter($syntax, $core);
