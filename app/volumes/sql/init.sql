@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS
         stamp       TIME
                     NOT NULL,
         name        TINYTEXT,
-        info        TEXT,
 
         PRIMARY KEY (user, link, stamp),
 

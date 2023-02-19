@@ -1,79 +1,86 @@
 <?
 namespace Plunch\CRUD;
-
+require_once "/vendor/autoload.php";
 require_once "User.php";
-require_once "CRUD/DataBaseLayerException.php";
 require_once "Video.php";
+require_once "Table.php";
+require_once "CRUD/DataBaseTable.php";
+require_once "CRUD/GeneralCRUD.php";
+require_once "CRUD/GeneralReplace.php";
+require_once "CRUD/Videos.php";
 
-use Plunch\Video as Video;
-use Plunch\User as User;
+use Plunch\{Video, User};
+use Plunch\Util\Table as Table;
 
-final class PinnedVideos {
-    const TABLE = 'user/pinned_videos';
+final class PinnedVideos implements DataBaseTable {
+    use GeneralCRUD;
+    use GeneralReplace;
+
+    public const TABLE = 'user/pinned_videos';
+    public const SCHEMA = ["link"];
+
+    private Videos $videos;
 
     public function __construct(
         private User $user, 
         private $db
-    ) {}
-
-    public function read_if_exists() {
-        $query = <<<'SQL'
-            SELECT link FROM `%l` 
-                WHERE user=%s
-        SQL;
-
-        $name = $this->user->name();
-        $link = $this->db->queryFirstField(
-            $query, 
-            static::TABLE, $name
-        );
-        return $link? new Video($link) : $link;
+    ) {
+        $this->videos = new Videos($user, $db);
     }
 
-    public function does_exist() {
-        $video = $this->read_if_exists();
-        return $video !== null;
+    // DataBaseTable Interface
+    public function entity_from_row(Array $row) {
+        $row = Table\shed_row($row, self::SCHEMA);
+        return $this->videos->read(new Video($row["link"]));
     }
 
-    public function read(): Video {
-        $video = $this->read_if_exists();
-        if ($video === null) {
-            throw new NoSuchDataException("nothing is pinned");
-        }
-        return $video;
-    }
-
-    private function form_data(Video $video) {
+    public function row_from_entity($video): Array {
         return [
-            "user" => $this->user->name(),
-            "link" => $video->link()
+            "user" => "{$this->user->name()}",
+            "link" => "{$video->link()}"
         ];
     }
-
-    private function with_data(string $method, Video $video) {
-        $data = $this->form_data($video);
-        return $this->db->$method(static::TABLE, $data);
+    
+    public function locate($video) {
+        $where = new \WhereClause('AND');
+        $where->add('user=%s', $this->user->name());
+        return $where;
+    }
+    
+    // GeneralRead Trait
+    public function read_if_exists(): ?Video {
+        return $this->general_read_if_exists(null);
     }
 
+    public function does_exist(): bool {
+        return $this->general_does_exist(null);
+    }
+    
+    public function read(): Video {
+        return $this->general_read("nothing is pinned", null);
+    }
+
+    // GeneralUpdate Trait
+    public function update(Video $new) {
+        return $this->general_update(null, $new);
+    }
+    
+    // GeneralCreate Trait
     public function create(Video $video) {
-        return $this->with_data('insert', $video);
+        return $this->general_create($video);
     }
 
-
-    public function replace(Video $video) {
-        return $this->with_data('replace', $video);
-    }
-
-    public function update(Video $video) {
-        return $this->with_data('update', $video);
-    }
-
+    // GeneralDelete Trait
     public function delete() {
-        return $this->db->delete(
-            static::TABLE, "user=%s", $this->user->name()
-        );
+        return $this->general_delete(null);
     }
 
+    // GeneralReplace Trait 
+    public function replace(Video $video) {
+        return $this->general_replace($video);
+    }
+
+    // Other
     public function actualize() {
         $video = $this->read_if_exists();
         if ($video !== null) {
@@ -83,4 +90,3 @@ final class PinnedVideos {
         }
     }
 }
-

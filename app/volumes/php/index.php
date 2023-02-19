@@ -15,10 +15,6 @@ $user_name = $_POST["user_name"];
 
 $connection = new MeekroDB("mariadb", "root", "root", "plunch");
 
-display(function () use ($connection) {
-    print_r([...$connection->query("SHOW TABLES")]);
-});
-
 $users = new Plunch\CRUD\Users($connection);
 $user = $users->read(new Plunch\User($user_name));
 
@@ -26,25 +22,43 @@ $core = new Plunch\Core($user, $connection);
 // need modules :(  
 
 $video_syntax = [
-    "video_add" => [
-        ["add", "video"], 
-        ["quoted_string"]
+    "add_video" => [
+        ["add", "video"], ["arg"]
     ],
-    "video_delete" => [
-        ["delete", "video"],
-        ["quoted_string"]
+    "delete_video" => [
+        ["delete", "video"], ["arg"]
     ],
-    "video_watch" => [
-        ["watch", "video"],
-        ["quoted_string"]
+    "watch_video" => [
+        ["watch", "video"], ["arg"]
     ],
-    "video_unwatch" => [
-        ["unwatch", "video"],
-        ["quoted_string"]
+    "unwatch_video" => [
+        ["unwatch", "video"], ["arg"]
     ],
-    "video_rename" => [
-        ["rename", "video"],
-        ["quoted_string", "quoted_string"]
+    "rename_video" => [
+        ["rename", "video"], ["arg", "arg"]
+    ]
+];
+
+$video_timestamps_syntax = [
+    "add_timestamp_to_video" => [
+        ["add", "timestamp", "to"], 
+        ["arg", "time", "arg"]
+    ],
+    "delete_timestamp_from_video" => [
+        ["delete", "timestamp", "from"], 
+        ["arg", "time"]
+    ],
+    "rename_timestamp_for_video" => [
+        ["rename", "timestamp", "for"], 
+        ["arg", "time", "arg"]
+    ],
+    "list_video_timestamps" => [
+        ["list", "timestamps", "of"],
+        ["arg"]
+    ],
+    "reset_timestamp_for_video" => [
+        ["reset", "timestamp", "for"],
+        ["arg", "time", "time"]
     ]
 ];
 
@@ -59,17 +73,30 @@ $pinned_syntax = [
         ["unwatch"], []
     ],
     "rename_pinned" => [
-        ["rename"], ["quoted_string"]
+        ["rename"], ["arg"]
     ],
-    "pin" => [
-        ["pin"], ["quoted_string"]
+];
+
+$pinned_timestamps_syntax = [
+    "add_timestamp" => [
+        ["add", "timestamp"], 
+        ["time", "arg"]
     ],
-    "unpin" => [ 
-        ["unpin"], []
-    ]
-    ,
-    "pick" => [
-        ["pick"], []
+    "delete_timestamp" => [
+        ["delete", "timestamp"], 
+        ["time"]
+    ],
+    "rename_timestamp" => [
+        ["rename", "timestamp"], 
+        ["time", "arg"]
+    ],
+    "list_timestamps" => [
+        ["list", "timestamps"],
+        []
+    ],
+    "reset_timestamp" => [
+        ["reset", "timestamp"],
+        ["time", "time"]
     ]
 ];
 
@@ -80,8 +107,24 @@ $syntax = [
     "list_videos" => [
         ["list", "videos"], []
     ],
+    "pin" => [
+        ["pin"], ["arg"]
+    ],
+    "unpin" => [ 
+        ["unpin"], []
+    ]
+    ,
+    "pick" => [
+        ["pick"], []
+    ],
+    "grep_timestamps" => [
+        ["grep", "timestamps"],
+        ["arg"]
+    ],
     ...$video_syntax,
-    ...$pinned_syntax
+    ...$pinned_syntax,
+    ...$video_timestamps_syntax,
+    ...$pinned_timestamps_syntax
 ];
 
 $interpreter = new Interpreter($syntax, $core);
@@ -91,6 +134,6 @@ display(function () use ($interpreter) {
         try {
             echo $interpreter->execute($cmd) . "\n";
         } catch (Throwable $e) {
-            echo $e->getMessage() . "\n";
+            echo $e;
         }
 });

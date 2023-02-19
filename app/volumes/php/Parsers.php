@@ -84,19 +84,57 @@ function quoted_string(): Parsica\Parser {
     );
 }
 
+function unquoted_string(): Parsica\Parser {
+    $ws = Parsica\isWhitespace();
+    $quote = Parsica\orPred(
+        Parsica\isEqual('"'), Parsica\isEqual("'")
+    );
+    $bad = Parsica\orPred($ws, $quote);
+    $not_bad = Parsica\satisfy(Parsica\notPred($bad));
+    $not_ws = Parsica\satisfy(Parsica\notPred($ws));
+    return $not_bad->and(Parsica\zeroOrMore($not_ws));
+}
+
 function identifier(): Parsica\Parser {
     $parser = Parsica\atLeastOne(Parsica\alphaNumChar()->or(Parsica\oneOfS("_-")));
     return $parser->label("identifier");
 }
 
-const LISTABLE = [
-    "videos"
-];
-
-function listable(): Parsica\Parser {
-    return Parsica\any(...array_map(Parsica\string(...), LISTABLE));
+function arg(): Parsica\Parser {
+    return Parsica\any(
+        quoted_string(),
+        unquoted_string()
+    );
 }
 
-function video_id(): Parsica\Parser {
-    return Parsica\any(identifier(), quoted_string());
+
+function filt(callable $cond, Parsica\Parser $parser): Parsica\Parser {
+    $branch = fn ($x) => $cond($x)? Parsica\pure($x) 
+                                  : Parsica\fail("filtered"); 
+    return Parsica\bind($parser, $branch);
+}
+
+function positive_integer(): Parsica\Parser {
+    $num = Parsica\atLeastOne(Parsica\digitChar());
+    return $num->map(intval(...))->label("positive_integer");
+}
+
+function integer_below_60(): Parsica\Parser {
+    $in60 = fn ($x) => ($x < 60);
+    return filt($in60, positive_integer());
+}
+
+function time(): Parsica\Parser {
+    $sep = Parsica\char(':');
+    $enclose = fn ($x) => [$x];
+    $seconds = integer_below_60()->label("seconds");
+    $minutes = integer_below_60()->label("minutes")
+                       ->thenIgnore($sep);
+    $hours = positive_integer()->label("hours")
+                               ->thenIgnore($sep);
+    return Parsica\any(
+        Parsica\collect($hours,          $minutes,        $seconds),
+        Parsica\collect(Parsica\pure(0), $minutes,        $seconds),
+        Parsica\collect(Parsica\pure(0), Parsica\pure(0), $seconds)
+    )->label("[[hours:]minutes:]seconds");
 }

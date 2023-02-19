@@ -29,5 +29,9 @@ final class Video {
         $this->watched = false;
         return $this;
     }
+
+    public function __toString() {
+        return $this->link();
+    }
 }
 
