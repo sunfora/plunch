@@ -4,16 +4,25 @@ require_once "InternalException.php";
 
 use Plunch\{InternalException};
 
-function make_params(Array $schema) {
-    return \implode(', ', $schema);
-}
 
 trait GeneralRead {
+    private function read_from() {
+        return '`' . self::TABLE . '`';
+    }
+
+    private static function make_schema_from(Array $schema): string {
+        return \implode(', ', $schema);
+    }
+
+    private function read_schema() {
+        return $this->make_schema_from(self::SCHEMA);
+    }
+
     private function general_read_if_exists($entity) {
         $row = $this->db->queryFirstRow(
-            "SELECT %l FROM `%l` WHERE %l",
-            make_params(self::SCHEMA),
-            self::TABLE,
+            "SELECT %l FROM %l WHERE %l",
+            $this->read_schema(),
+            $this->read_from(),
             $this->locate($entity)
         );
         return ($row !== null)? $this->entity_from_row($row) : null;
@@ -32,11 +41,11 @@ trait GeneralRead {
     }
 
     private function general_read_where($locate_rows, string $tail="") {
-        $query = "SELECT %l FROM `%l` WHERE %l %l";
+        $query = "SELECT %l FROM %l WHERE %l %l";
         $rows = $this->db->query(
             $query, 
-            make_params(self::SCHEMA),
-            self::TABLE,
+            $this->read_schema(),
+            $this->read_from(),
             $locate_rows,
             $tail
         );

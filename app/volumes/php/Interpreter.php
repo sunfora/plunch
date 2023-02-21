@@ -19,7 +19,7 @@ final class Interpreter
     }
     
     private static function parser_from($cmd_spec, $arg_spec) {
-        $whitespaces = Parsica\skipHSpace();
+        $whitespaces = Parsica\skipSpace();
         
         $collect = ($arg_spec)? Parsers\collect_with_spaces(...) : Parsica\collect(...);
         
@@ -65,7 +65,7 @@ final class Interpreter
 
     private function update_failure($known_command, $stream, $cmd_spec, $args_spec) {
         $cmd_parser = static::cmd_parser_from($cmd_spec);
-        $cmd_parser = Parsica\skipHSpace()->then($cmd_parser);
+        $cmd_parser = Parsica\skipSpace()->then($cmd_parser);
 
         $result = $cmd_parser->run($stream);
 
@@ -76,9 +76,9 @@ final class Interpreter
             return [false, null];
         } 
 
-        $spaces_after_cmd = ($args_spec)? Parsica\skipHSpace1() : Parsica\skipHSpace();
+        $spaces_after_cmd = ($args_spec)? Parsica\skipSpace1() : Parsica\skipSpace();
         $arg_parser = Parsica\between(
-            $spaces_after_cmd, Parsica\skipHSpace(),
+            $spaces_after_cmd, Parsica\skipSpace(),
             static::arg_parser_from($args_spec)
         )->thenEof();
 

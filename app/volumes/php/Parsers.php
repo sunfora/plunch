@@ -34,7 +34,7 @@ function collect_with_spaces(...$parsers): Parsica\Parser {
 
     $n = count($parsers);
 
-    $add_spaces = fn ($parser) => $parser->append(Parsica\skipHSpace1());
+    $add_spaces = fn ($parser) => $parser->append(Parsica\skipSpace1());
     $mapped_parsers = array_map($add_spaces, $parsers);
     $mapped_parsers[$n - 1] = $parsers[$n - 1];
     
@@ -107,7 +107,6 @@ function arg(): Parsica\Parser {
     );
 }
 
-
 function filt(callable $cond, Parsica\Parser $parser): Parsica\Parser {
     $branch = fn ($x) => $cond($x)? Parsica\pure($x) 
                                   : Parsica\fail("filtered"); 
@@ -137,4 +136,10 @@ function time(): Parsica\Parser {
         Parsica\collect(Parsica\pure(0), $minutes,        $seconds),
         Parsica\collect(Parsica\pure(0), Parsica\pure(0), $seconds)
     )->label("[[hours:]minutes:]seconds");
+}
+
+function video_list(): Parsica\Parser {
+    $start = Parsica\string(":");
+    $list = Parsica\sepBy(Parsica\skipSpace(), arg());
+    return $start->then(Parsica\skipSpace())->then($list);
 }

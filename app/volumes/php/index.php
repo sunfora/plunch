@@ -4,6 +4,7 @@ require_once "Interpreter.php";
 require_once "Core.php";
 require_once "CRUD/Users.php";
 require_once "User.php";
+require_once "InternalException.php";
 require "cmd-form.php";
 
 if (! $_POST) {
@@ -22,6 +23,9 @@ $core = new Plunch\Core($user, $connection);
 // need modules :(  
 
 $video_syntax = [
+    "list_videos" => [
+        ["list", "videos"], []
+    ],
     "add_video" => [
         ["add", "video"], ["arg"]
     ],
@@ -100,12 +104,39 @@ $pinned_timestamps_syntax = [
     ]
 ];
 
+$playlist_syntax = [
+    "list_playlists" => [
+        ["list", "playlists"], []
+    ],
+    "add_playlist" => [
+        ["add", "playlist"], ["arg"]
+    ],
+    "rename_playlist" => [
+        ["rename", "playlist"], ["arg", "arg"]
+    ],
+    "delete_playlist" => [
+        ["delete", "playlist"], ["arg"]
+    ],
+    "list_playlist_videos" => [
+        ["list", "videos", "in"],
+        ["arg"]
+    ],
+    "mend_playlist" => [
+        ["mend", "playlist"],
+        ["arg", "video_list"]
+    ],
+    "clear_playlist" => [
+        ["clear", "playlist"],
+        ["arg"]
+    ],
+    "playlist_status" => [
+        ["status", "of"], ["arg"]
+    ],
+];
+
 $syntax = [
     "idle" => [
         [], []
-    ],
-    "list_videos" => [
-        ["list", "videos"], []
     ],
     "pin" => [
         ["pin"], ["arg"]
@@ -114,8 +145,8 @@ $syntax = [
         ["unpin"], []
     ]
     ,
-    "pick" => [
-        ["pick"], []
+    "pinned" => [
+        ["pinned"], []
     ],
     "grep_timestamps" => [
         ["grep", "timestamps"],
@@ -124,7 +155,8 @@ $syntax = [
     ...$video_syntax,
     ...$pinned_syntax,
     ...$video_timestamps_syntax,
-    ...$pinned_timestamps_syntax
+    ...$pinned_timestamps_syntax,
+    ...$playlist_syntax
 ];
 
 $interpreter = new Interpreter($syntax, $core);
@@ -133,7 +165,11 @@ display(function () use ($interpreter) {
         ["cmd" => $cmd] = $_POST;
         try {
             echo $interpreter->execute($cmd) . "\n";
-        } catch (Throwable $e) {
-            echo $e;
+        } catch (Plunch\InternalException $e) {
+            echo $e->getMessage();
+        } catch (Parsica\Parsica\ParserHasFailed $e) {
+            echo $e->getMessage();
+        } catch (mysqli_sql_exception $e) {
+            echo "unexpected db failure: {$e->getCode()}";
         }
 });

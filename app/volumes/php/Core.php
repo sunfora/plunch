@@ -1,12 +1,15 @@
 <?
 namespace Plunch;
 require "/vendor/autoload.php";
+require_once "User.php";
 require_once "Table.php";
 require_once "Video.php";
+require_once "Playlist.php";
 require_once "CRUD/Videos.php";
 require_once "CRUD/PinnedVideos.php";
 require_once "CRUD/Timestamps.php";
-require_once "User.php";
+require_once "CRUD/Playlists.php";
+require_once "CRUD/PlaylistMaps.php";
 
 use Plunch\Util\Table as Table;
 
@@ -17,13 +20,55 @@ final class Core {
     public function __construct(private User $user, private $db) {
         $this->videos = new CRUD\Videos($user, $db);   
         $this->pinned_videos = new CRUD\PinnedVideos($user, $db);
+        $this->playlists = new CRUD\Playlists($user, $db);
     }
 
-
+    // Main [
     public function idle() {
         return null; 
     }
 
+    public function grep_timestamps($pattern) {
+        $grepped = $this->videos->grep_timestamps($pattern);
+        
+        $timestamps = $this->repr_timestamps(
+            \array_column($grepped, "timestamp")
+        );
+        
+        $videos = \array_map(
+            fn ($x) => ["{$x->link()}"], 
+            \array_column($grepped, "video")
+        );
+        $result = \array_map(\array_merge(...), $videos, $timestamps);
+        return Table\to_string($result);
+    }
+
+    public function pinned() {
+        $video = $this->user->pinned();
+        
+        $repr_video = $this->repr_video_list([$video]);
+        $repr_ts = $this->list_video_timestamps($video->link());
+
+        return \implode("\n\n", [$repr_video, $repr_ts]);
+    }
+
+    public function pin(string $link) {
+        $video = $this->videos->read(new Video($link));
+        $this->user->pin($video);
+        $this->pinned_videos->replace($video);
+        return "pinned video $link";
+    }
+    
+    public function unpin() {
+        if (! $this->user->has_pinned() ) {
+            return "nothing to unpin";
+        }
+        $video = $this->user->pinned();
+        $this->user->unpin();
+        $this->pinned_videos->delete($video);
+        return "unpinned video {$video->link()}";
+    }
+    
     private function repr_video_list(Array $videos) {
         $repr = function ($video) {
             $indicator = $video->is_watched()? '[*]' : '[ ]';
@@ -40,6 +85,9 @@ final class Core {
         return $this->repr_video_list($videos); 
     }
 
+    // ]
+
+    // Videos [
     public function add_video(string $link) {
         $this->videos->create(new Video($link));
         return "added video $link"; 
@@ -83,28 +131,16 @@ final class Core {
         return "$link_old -> $link_new";
     }
 
-    public function pin(string $link) {
-        $video = $this->videos->read(new Video($link));
-        $this->user->pin($video);
-        $this->pinned_videos->replace($video);
-        return "pinned video $link";
-    }
+    // ]
 
-    public function unpin() {
-        if (! $this->user->has_pinned() ) {
-            return "nothing to unpin";
-        }
-        $video = $this->user->pinned();
-        $this->user->unpin();
-        $this->pinned_videos->delete($video);
-        return "unpinned video {$video->link()}";
-    }
+    // Pinned Video [
 
     private function pinned_as_first_arg(callable $action, mixed... $args) {
         if (! $this->user->has_pinned() ) {
             return "nothing is pinned";
         }
         $video = $this->user->pinned();
+
         $link = $video->link();
         $result = $action($link, ...$args);
 
@@ -129,9 +165,9 @@ final class Core {
         return $this->pinned_as_first_arg($this->delete_video(...));
     }
 
-    public function pick() {
-        return $this->user->pinned()->link();
-    }
+    // ]
+
+    // Timestamps [
 
     private function timestamps(string $link) {
         $video = $this->videos->read(new Video($link));
@@ -179,7 +215,7 @@ final class Core {
         return "$old_ts -> $new_ts";
     }
 
-    private function prettify_timestamps(Array $stamps) {
+    private function repr_timestamps(Array $stamps) {
         $length = fn ($x) => \strlen("{$x->time()[0]}");
 
         $pad_up_to = \max(\array_map($length, $stamps));
@@ -205,9 +241,13 @@ final class Core {
 
     public function list_video_timestamps($link) {
         $stamps = $this->timestamps($link)->read_all();
-        $stamps = $this->prettify_timestamps($stamps);
+        $stamps = $this->repr_timestamps($stamps);
         return Table\to_string($stamps);
     }
+
+    // ]
+
+    // Pinned Timestamps [
 
     public function add_timestamp(Array $time, string $name) {
         return $this->pinned_as_first_arg(
@@ -239,18 +279,81 @@ final class Core {
         );
     }
 
-    public function grep_timestamps($pattern) {
-        $grepped = $this->videos->grep_timestamps($pattern);
-        
-        $timestamps = $this->prettify_timestamps(
-            \array_column($grepped, "timestamp")
-        );
-        
-        $videos = \array_map(
-            fn ($x) => ["{$x->link()}"], 
-            \array_column($grepped, "video")
-        );
-        $result = \array_map(\array_merge(...), $videos, $timestamps);
-        return Table\to_string($result);
+    // ]
+
+    // Playlists [
+    private function repr_playlists(Array $pls): string {
+        $repr = fn ($p) => [$p->name()];
+        return Table\to_string(\array_map($repr, $pls));
     }
+
+    public function list_playlists() {
+        return $this->repr_playlists($this->playlists->read_all());
+    }
+
+    public function add_playlist(string $name) {
+        $this->playlists->create(new Playlist($name));
+        return "added a playlist $name";
+    }
+
+    public function rename_playlist(string $name, string $new_name) {
+        $old = $this->playlists->read(new Playlist($name));
+        $new = clone $old;
+        $old->rename($new_name);
+        $this->playlists->update($old, $new);
+        return "$name -> $new_name";
+    }
+
+    public function delete_playlist(string $name) {
+        $play = $this->playlists->read(new Playlist($name));
+        $this->playlists->delete($play);
+        return "deleted playlist $name";
+    }
+
+    public function list_playlist_videos(string $name) {
+        $pls = $this->playlists->read_with_videos(new Playlist($name));
+        return $this->repr_video_list([...$pls]);
+    }
+
+    public function clear_playlist(string $name) {
+        $this->db->startTransaction();
+        $this->delete_playlist($name);
+        $this->add_playlist($name);
+        $this->db->commit();
+        return "cleared playlist $name";
+    }
+
+    private function status(Playlist $playlist) {
+        $watched = 0;
+        foreach ($playlist as $video) {
+            $watched += (int) $video->is_watched();
+        }
+        return $watched/count($playlist);
+    }
+
+    public function playlist_status(string $name) {
+        $pls = $this->playlists->read_with_videos(new Playlist($name));
+        $rate = sprintf("%.2f%%", $this->status($pls) * 100);
+        return "playlist $name: $rate";
+    }
+
+    public function mend_playlist(string $name, Array $links) {
+        $this->db->startTransaction();
+
+        $this->clear_playlist($name); 
+
+        if ($links) {
+            $make_video = fn ($link) => new Video($link);
+            $videos = \array_map($make_video, $links);
+    
+            $vmaps = CRUD\PlaylistMaps::vmaps_from($videos);
+            $maps = new CRUD\PlaylistMaps(new Playlist($name), $this->user, $this->db);
+
+            $maps->create(...$vmaps);
+        }
+
+        $this->db->commit();
+        return $this->list_playlist_videos($name);
+    }    
+    // ] 
 }
