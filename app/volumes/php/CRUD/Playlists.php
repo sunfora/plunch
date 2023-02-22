@@ -44,6 +44,14 @@ final class Playlists implements DataBaseTable {
         $where->add('name LIKE %s', $playlist->name());
         return $where;
     }
+
+    public function name(): string {
+        return self::TABLE;
+    }
+    public function schema(): Array {
+        return self::SCHEMA;
+    }
+
     // ]
 
     // GeneralRead Trait [

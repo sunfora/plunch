@@ -28,7 +28,7 @@ final class PinnedVideos implements DataBaseTable {
         $this->videos = new Videos($user, $db);
     }
 
-    // DataBaseTable Interface
+    // DataBaseTable Interface [
     public function entity_from_row(Array $row) {
         $row = Table\shed_row($row, self::SCHEMA);
         return $this->videos->read(new Video($row["link"]));
@@ -46,8 +46,18 @@ final class PinnedVideos implements DataBaseTable {
         $where->add('user=%s', $this->user->name());
         return $where;
     }
-    
-    // GeneralRead Trait
+
+    public function name(): string {
+        return self::TABLE;
+    }
+
+    public function schema(): Array {
+        return self::SCHEMA;
+    }
+
+    // ]
+
+    // GeneralRead Trait [
     public function read_if_exists(): ?Video {
         return $this->general_read_if_exists(null);
     }
@@ -59,28 +69,33 @@ final class PinnedVideos implements DataBaseTable {
     public function read(): Video {
         return $this->general_read("nothing is pinned", null);
     }
+    // ]
 
-    // GeneralUpdate Trait
+    // GeneralUpdate Trait [
     public function update(Video $new) {
         return $this->general_update(null, $new);
     }
-    
-    // GeneralCreate Trait
+    // ]
+
+    // GeneralCreate Trait [
     public function create(Video $video) {
         return $this->general_create($video);
     }
+    // ]
 
-    // GeneralDelete Trait
+    // GeneralDelete Trait [
     public function delete() {
         return $this->general_delete(null);
     }
+    // ]
 
-    // GeneralReplace Trait 
+    // GeneralReplace Trait  [
     public function replace(Video $video) {
         return $this->general_replace($video);
     }
+    // ]
 
-    // Other
+    // Other [
     public function actualize() {
         $video = $this->read_if_exists();
         if ($video !== null) {
@@ -89,4 +104,5 @@ final class PinnedVideos implements DataBaseTable {
             $this->user->unpin();
         }
     }
+    // ]
 }

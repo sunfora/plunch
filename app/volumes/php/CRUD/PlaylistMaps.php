@@ -61,6 +61,15 @@ final class PlaylistMaps implements DataBaseTable {
         $parent = $data["parent"];
         return [$video->link() => [$video, $parent]];
     }
+        
+    public function name(): string {
+        return self::TABLE;
+    }
+
+    public function schema(): Array {
+        return self::SCHEMA;
+    }
+
     // ]
 
     // GeneralRead Trait [

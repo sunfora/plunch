@@ -21,15 +21,16 @@ final class Videos implements DataBaseTable {
 
     public function __construct(private User $user, private $db) {}
 
-    // TypecastRow Trait
+    // TypecastRow Trait [
     private function typecast_kv($key, $value) {
         return match ($key) {
             "link" => $value,
             "watched" => \boolval(\intval($value))   
         };
     }
-    
-    // DataBaseTable Interface
+    // ]
+
+    // DataBaseTable Interface [
     public function entity_from_row(Array $row) {
         $row = $this->typecast_row(Table\shed_row($row, self::SCHEMA));
         return new Video(...$row);
@@ -49,8 +50,18 @@ final class Videos implements DataBaseTable {
         $where->add('user=%s', $this->user->name());
         return $where;
     }
-    
-    // GeneralRead Trait
+
+    public function name(): string {
+        return self::TABLE;
+    }
+
+    public function schema(): Array {
+        return self::SCHEMA;
+    }
+
+    // ]
+
+    // GeneralRead Trait [
     public function read_if_exists(Video $video): ?Video {
         return $this->general_read_if_exists($video);
     }
@@ -69,22 +80,27 @@ final class Videos implements DataBaseTable {
         return $this->general_read_where($where);
     }
 
-    // GeneralUpdate Trait
+    // ]
+
+    // GeneralUpdate Trait [
     public function update(Video $dest, Video $new) {
         return $this->general_update($dest, $new);
     }
-    
-    // GeneralCreate Trait
+    // ]
+
+    // GeneralCreate Trait [
     public function create(Video $video) {
         return $this->general_create($video);
     }
+    // ]
 
-    // GeneralDelete Trait
+    // GeneralDelete Trait [
     public function delete(Video $video) {
         return $this->general_delete($video);
     }
+    // ]
     
-    // Other
+    // Other [
     public function grep_timestamps(string $pattern) {
         $schema_stamp = \array_map(fn ($x) => "a.".$x, Timestamps::SCHEMA);
         $schema_video = \array_map(fn ($x) => "b.".$x, self::SCHEMA);
@@ -114,5 +130,6 @@ final class Videos implements DataBaseTable {
 
         return \array_map($cast, $results);
     }
+    // ]
 }
 

@@ -24,7 +24,7 @@ final class Timestamps implements DataBaseTable {
         private $db
     ) {}
 
-    // DataBaseTable Interface
+    // DataBaseTable Interface [
     public function entity_from_row(Array $row) {
         $row = Table\descheme_row($row, self::SCHEMA);
         return Timestamp::from_strtime(...$row);
@@ -46,8 +46,18 @@ final class Timestamps implements DataBaseTable {
         $where->add('stamp=%s', $timestamp->strtime());
         return $where;
     }
-    
-    // GeneralRead Trait
+
+    public function name(): string {
+        return self::TABLE;
+    }
+
+    public function schema(): Array {
+        return self::SCHEMA;
+    }
+
+    // ]
+
+    // GeneralRead Trait [
     public function read_if_exists(Timestamp $timestamp): ?Timestamp {
         return $this->general_read_if_exists($timestamp);
     }
@@ -69,18 +79,23 @@ final class Timestamps implements DataBaseTable {
         return $this->general_read_where($where, $tail="ORDER BY stamp ASC");
     }
 
-    // GeneralUpdate Trait
+    // ]
+
+    // GeneralUpdate Trait [
     public function update(Timestamp $dest, Timestamp $new) {
         return $this->general_update($dest, $new);
     }
+    // ]
     
-    // GeneralCreate Trait
+    // GeneralCreate Trait [
     public function create(Timestamp $timestamp) {
         return $this->general_create($timestamp);
     }
+    // ]
 
-    // GeneralDelete Trait
+    // GeneralDelete Trait [
     public function delete(Timestamp $timestamp) {
         return $this->general_delete($timestamp);
     }
+    // ]
 }
