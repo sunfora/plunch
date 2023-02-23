@@ -8,9 +8,9 @@ enum ErrorCode : int {
 
     public function explain_in_default_way() : string {
         return match($this) {
-            ErrorCode::DUP_ENTRY => "already exists",
-            ErrorCode::NO_REFERENCED_ROW => "provided data does not exist",
-            ErrorCode::ROW_IS_REFERENCED => "value is still in use"
+            ErrorCode::DUP_ENTRY => "value clash: already exists",
+            ErrorCode::NO_REFERENCED_ROW => "improper value: does not exist",
+            ErrorCode::ROW_IS_REFERENCED => "depends on value: can't change"
         };
     }
 }
