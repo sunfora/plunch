@@ -18,6 +18,9 @@ require_once "CRUD/Deletes.php";
 require_once "CRUD/MeekroUpdater.php";
 require_once "CRUD/Updates.php";
 
+require_once "CRUD/MeekroReplacer.php";
+require_once "CRUD/Replaces.php";
+
 use Plunch\{Video, User};
 use Plunch\Util\Table as Table;
 
@@ -32,6 +35,7 @@ final class PinnedVideos implements DataBaseTable {
     private Creates $creator;
     private Deletes $deleter;
     private Updates $updater;
+    private Replaces $replacer;
 
     public function __construct(
         private User $user, 
@@ -41,6 +45,7 @@ final class PinnedVideos implements DataBaseTable {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
         $this->updater = new MeekroUpdater($this, $db);
+        $this->replacer = new MeekroReplacer($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -106,7 +111,7 @@ final class PinnedVideos implements DataBaseTable {
 
     // GeneralReplace Trait  [
     public function replace(Video $video) {
-        return $this->general_replace($video);
+        return $this->replacer->replace($video);
     }
     // ]
 
