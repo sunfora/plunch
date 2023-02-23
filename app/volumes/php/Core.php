@@ -218,7 +218,7 @@ final class Core {
     private function repr_timestamps(Array $stamps) {
         $length = fn ($x) => \strlen("{$x->time()[0]}");
 
-        $pad_up_to = \max(\array_map($length, $stamps));
+        $pad_up_to = \max([0, ...\array_map($length, $stamps)]);
         $pad_left = fn ($v, $x) => \str_pad("$v", $x, STR_PAD_LEFT);
 
         $pad_hours = fn ($h) => $pad_left($h, $pad_up_to);
