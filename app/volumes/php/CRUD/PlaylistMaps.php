@@ -13,6 +13,9 @@ require_once "CRUD/DataBaseTable.php";
 require_once "CRUD/ErrorCode.php";
 require_once "InternalException.php";
 
+require_once "CRUD/MeekroCreator.php";
+require_once "CRUD/Creates.php";
+
 use Plunch\{User, Video, Playlist, InternalException};
 
 final class PlaylistMaps implements DataBaseTable {
@@ -21,6 +24,7 @@ final class PlaylistMaps implements DataBaseTable {
     use GeneralCRUD;
 
     private Videos $videos;
+    private Creates $creator;
 
     public function __construct(
         private Playlist $playlist,
@@ -28,6 +32,7 @@ final class PlaylistMaps implements DataBaseTable {
         private $db
     ) {
         $this->videos = new Videos($user, $db);
+        $this->creator = new MeekroCreator($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -114,13 +119,9 @@ final class PlaylistMaps implements DataBaseTable {
 
 
     // GeneralCreate Trait [
-    private const FAILED_CREATE_MESSAGES = [
-        ErrorCode::PARENT_CONSTRAINT_ON_ADD_OR_UPDATE => "video does not exist",
-    ];
-
     public function create(Array... $vmaps) {
 
-        return $this->general_create(...$vmaps);
+        return $this->creator->create(...$vmaps);
     }
     // ]
     

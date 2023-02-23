@@ -9,6 +9,9 @@ require_once "CRUD/Timestamps.php";
 require_once "CRUD/TypecastRow.php";
 require_once "CRUD/DataBaseTable.php";
 
+require_once "CRUD/MeekroCreator.php";
+require_once "CRUD/Creates.php";
+
 use Plunch\{Video, User};
 use Plunch\Util\Table as Table;
 
@@ -19,7 +22,11 @@ final class Videos implements DataBaseTable {
     use GeneralCRUD; 
     use TypecastRow;
 
-    public function __construct(private User $user, private $db) {}
+    private Creates $creator;
+
+    public function __construct(private User $user, private $db) {
+        $this->creator = new MeekroCreator($this, $db);
+    }
 
     // TypecastRow Trait [
     private function typecast_kv($key, $value) {
@@ -90,7 +97,7 @@ final class Videos implements DataBaseTable {
 
     // GeneralCreate Trait [
     public function create(Video $video) {
-        return $this->general_create($video);
+        return $this->creator->create($video);
     }
     // ]
 

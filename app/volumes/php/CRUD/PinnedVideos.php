@@ -9,6 +9,9 @@ require_once "CRUD/GeneralCRUD.php";
 require_once "CRUD/GeneralReplace.php";
 require_once "CRUD/Videos.php";
 
+require_once "CRUD/MeekroCreator.php";
+require_once "CRUD/Creates.php";
+
 use Plunch\{Video, User};
 use Plunch\Util\Table as Table;
 
@@ -20,12 +23,14 @@ final class PinnedVideos implements DataBaseTable {
     public const SCHEMA = ["link"];
 
     private Videos $videos;
+    private Creates $creator;
 
     public function __construct(
         private User $user, 
         private $db
     ) {
         $this->videos = new Videos($user, $db);
+        $this->creator = new MeekroCreator($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -79,7 +84,7 @@ final class PinnedVideos implements DataBaseTable {
 
     // GeneralCreate Trait [
     public function create(Video $video) {
-        return $this->general_create($video);
+        return $this->creator->create($video);
     }
     // ]
 

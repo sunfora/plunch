@@ -7,6 +7,9 @@ require_once "CRUD/DataBaseTable.php";
 require_once "CRUD/GeneralCRUD.php";
 require_once "CRUD/PlaylistMaps.php";
 
+require_once "CRUD/MeekroCreator.php";
+require_once "CRUD/Creates.php";
+
 use Plunch\{User, Playlist};
 
 final class Playlists implements DataBaseTable {
@@ -16,10 +19,14 @@ final class Playlists implements DataBaseTable {
 
     use GeneralCRUD;
 
+    private Creates $creator;
+
     public function __construct(
         private User $user, 
         private $db
-    ) {}
+    ) {
+        $this->creator = new MeekroCreator($this, $db);
+    }
 
     // DataBaseTable Interface [
     public function entity_from_row(Array $row) {
@@ -82,7 +89,7 @@ final class Playlists implements DataBaseTable {
 
     // GeneralCreate Trait [
     public function create(Playlist $playlist) {
-        return $this->general_create($playlist);
+        return $this->creator->create($playlist);
     }
     // ]
 

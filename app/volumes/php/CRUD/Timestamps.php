@@ -8,6 +8,9 @@ require_once "Timestamp.php";
 require_once "CRUD/DataBaseTable.php";
 require_once "CRUD/GeneralCRUD.php";
 
+require_once "CRUD/MeekroCreator.php";
+require_once "CRUD/Creates.php";
+
 use Plunch\{User, Video, Timestamp};
 use Plunch\Util\Table as Table;
 
@@ -18,11 +21,15 @@ final class Timestamps implements DataBaseTable {
 
     use GeneralCRUD;
 
+    private Creates $creator;
+
     public function __construct(
         private User $user, 
         private Video $video, 
         private $db
-    ) {}
+    ) {
+        $this->creator = new MeekroCreator($this, $db);
+    }
 
     // DataBaseTable Interface [
     public function entity_from_row(Array $row) {
@@ -89,7 +96,7 @@ final class Timestamps implements DataBaseTable {
     
     // GeneralCreate Trait [
     public function create(Timestamp $timestamp) {
-        return $this->general_create($timestamp);
+        return $this->creator->create($timestamp);
     }
     // ]
 

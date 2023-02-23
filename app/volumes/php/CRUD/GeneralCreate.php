@@ -21,7 +21,7 @@ trait GeneralCreate {
                 $messages[$e->getCode()] ?? $default
             );
 
-            throw match($e->getCode()) {
+            throw match(ErrorCode::tryFrom($e->getCode())) {
                 ErrorCode::DUPLICATE_KEY => $explain("already exists"),
                 ErrorCode::PARENT_CONSTRAINT_ON_ADD_OR_UPDATE => $explain("parent constraint failed"),
                 default => $e
