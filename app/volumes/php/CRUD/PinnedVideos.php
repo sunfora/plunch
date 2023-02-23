@@ -15,6 +15,9 @@ require_once "CRUD/Creates.php";
 require_once "CRUD/MeekroDeleter.php";
 require_once "CRUD/Deletes.php";
 
+require_once "CRUD/MeekroUpdater.php";
+require_once "CRUD/Updates.php";
+
 use Plunch\{Video, User};
 use Plunch\Util\Table as Table;
 
@@ -28,6 +31,7 @@ final class PinnedVideos implements DataBaseTable {
     private Videos $videos;
     private Creates $creator;
     private Deletes $deleter;
+    private Updates $updater;
 
     public function __construct(
         private User $user, 
@@ -36,6 +40,7 @@ final class PinnedVideos implements DataBaseTable {
         $this->videos = new Videos($user, $db);
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
+        $this->updater = new MeekroUpdater($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -83,7 +88,7 @@ final class PinnedVideos implements DataBaseTable {
 
     // GeneralUpdate Trait [
     public function update(Video $new) {
-        return $this->general_update(null, $new);
+        return $this->updater->update(null, $new);
     }
     // ]
 

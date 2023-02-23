@@ -14,6 +14,9 @@ require_once "CRUD/Creates.php";
 require_once "CRUD/MeekroDeleter.php";
 require_once "CRUD/Deletes.php";
 
+require_once "CRUD/MeekroUpdater.php";
+require_once "CRUD/Updates.php";
+
 use Plunch\{User, Video, Timestamp};
 use Plunch\Util\Table as Table;
 
@@ -26,6 +29,7 @@ final class Timestamps implements DataBaseTable {
 
     private Creates $creator;
     private Deletes $deleter;
+    private Updates $updater;
 
     public function __construct(
         private User $user, 
@@ -34,6 +38,7 @@ final class Timestamps implements DataBaseTable {
     ) {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
+        $this->updater = new MeekroUpdater($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -95,7 +100,7 @@ final class Timestamps implements DataBaseTable {
 
     // GeneralUpdate Trait [
     public function update(Timestamp $dest, Timestamp $new) {
-        return $this->general_update($dest, $new);
+        return $this->updater->update($dest, $new);
     }
     // ]
     

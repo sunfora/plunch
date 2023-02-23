@@ -15,6 +15,9 @@ require_once "CRUD/Creates.php";
 require_once "CRUD/MeekroDeleter.php";
 require_once "CRUD/Deletes.php";
 
+require_once "CRUD/MeekroUpdater.php";
+require_once "CRUD/Updates.php";
+
 use Plunch\{Video, User};
 use Plunch\Util\Table as Table;
 
@@ -27,10 +30,12 @@ final class Videos implements DataBaseTable {
 
     private Creates $creator;
     private Deletes $deleter;
+    private Updates $updater;
 
     public function __construct(private User $user, private $db) {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
+        $this->updater = new MeekroUpdater($this, $db);
     }
 
     // TypecastRow Trait [
@@ -96,7 +101,7 @@ final class Videos implements DataBaseTable {
 
     // GeneralUpdate Trait [
     public function update(Video $dest, Video $new) {
-        return $this->general_update($dest, $new);
+        return $this->updater->update($dest, $new);
     }
     // ]
 

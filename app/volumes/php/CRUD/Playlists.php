@@ -13,6 +13,9 @@ require_once "CRUD/Creates.php";
 require_once "CRUD/MeekroDeleter.php";
 require_once "CRUD/Deletes.php";
 
+require_once "CRUD/MeekroUpdater.php";
+require_once "CRUD/Updates.php";
+
 use Plunch\{User, Playlist};
 
 final class Playlists implements DataBaseTable {
@@ -24,6 +27,7 @@ final class Playlists implements DataBaseTable {
 
     private Creates $creator;
     private Deletes $deleter;
+    private Updates $updater;
 
     public function __construct(
         private User $user, 
@@ -31,6 +35,7 @@ final class Playlists implements DataBaseTable {
     ) {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
+        $this->updater = new MeekroUpdater($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -88,7 +93,7 @@ final class Playlists implements DataBaseTable {
 
     // GeneralUpdate Trait [
     public function update(Playlist $dest, Playlist $new) {
-        return $this->general_update($dest, $new);
+        return $this->updater->update($dest, $new);
     }
     // ]
 
