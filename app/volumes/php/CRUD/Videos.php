@@ -118,6 +118,8 @@ final class Videos implements DataBaseTable {
     // ]
     
     // Other [
+
+    // TODO: remove this into separate class 
     public function grep_timestamps(string $pattern) {
         $schema_stamp = \array_map(fn ($x) => "a.".$x, Timestamps::SCHEMA);
         $schema_video = \array_map(fn ($x) => "b.".$x, self::SCHEMA);
