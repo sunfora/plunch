@@ -16,6 +16,9 @@ require_once "InternalException.php";
 require_once "CRUD/MeekroCreator.php";
 require_once "CRUD/Creates.php";
 
+require_once "CRUD/MeekroDeleter.php";
+require_once "CRUD/Deletes.php";
+
 use Plunch\{User, Video, Playlist, InternalException};
 
 final class PlaylistMaps implements DataBaseTable {
@@ -25,6 +28,7 @@ final class PlaylistMaps implements DataBaseTable {
 
     private Videos $videos;
     private Creates $creator;
+    private Deletes $deleter;
 
     public function __construct(
         private Playlist $playlist,
@@ -33,6 +37,7 @@ final class PlaylistMaps implements DataBaseTable {
     ) {
         $this->videos = new Videos($user, $db);
         $this->creator = new MeekroCreator($this, $db);
+        $this->deleter = new MeekroDeleter($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -127,7 +132,7 @@ final class PlaylistMaps implements DataBaseTable {
     
     // GeneralDelete Trait [
     public function delete(Array $vmap) {
-        return $this->general_delete($vmap);
+        return $this->deleter->delete($vmap);
     }
     // ]
     

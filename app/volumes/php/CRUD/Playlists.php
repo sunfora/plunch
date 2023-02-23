@@ -10,6 +10,9 @@ require_once "CRUD/PlaylistMaps.php";
 require_once "CRUD/MeekroCreator.php";
 require_once "CRUD/Creates.php";
 
+require_once "CRUD/MeekroDeleter.php";
+require_once "CRUD/Deletes.php";
+
 use Plunch\{User, Playlist};
 
 final class Playlists implements DataBaseTable {
@@ -20,12 +23,14 @@ final class Playlists implements DataBaseTable {
     use GeneralCRUD;
 
     private Creates $creator;
+    private Deletes $deleter;
 
     public function __construct(
         private User $user, 
         private $db
     ) {
         $this->creator = new MeekroCreator($this, $db);
+        $this->deleter = new MeekroDeleter($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -95,7 +100,7 @@ final class Playlists implements DataBaseTable {
 
     // GeneralDelete Trait [
     public function delete(Playlist $playlist) {
-        return $this->general_delete($playlist);
+        return $this->deleter->delete($playlist);
     }
     // ]
 
