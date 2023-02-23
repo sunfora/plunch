@@ -14,7 +14,7 @@ abstract class MeekroOperation implements Explains {
     public function __construct(private \MeekroDB $db) {}
 
     public function explain(\Throwable $e, ...$args): ?string {
-        return $this->match_error_case($e)->explain_in_default_way();
+        return $this->match_error_case($e)?->explain_in_default_way();
     }
 
     protected function match_error_case(\Throwable $e): ?ErrorCode {
