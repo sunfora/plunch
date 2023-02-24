@@ -25,7 +25,7 @@ class MeekroCreator extends MeekroOperation implements Creates {
 
     public function create_no_explain(...$values) {
         return $this->db->insert(
-            $this->table->name(), $this->make_rows(...$values)
+            $this->table_expr(), $this->make_rows(...$values)
         );
     }
 }

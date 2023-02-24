@@ -19,7 +19,7 @@ class MeekroUpdater extends MeekroOperation implements Updates {
 
     public function update_no_explain($first, $second) {
         return $this->db->update(
-            $this->table->name(), 
+            $this->table_expr(), 
             $this->table->row_from_entity($second),
             '%l', $this->table->locate($first)
         );

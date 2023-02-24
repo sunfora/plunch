@@ -19,7 +19,7 @@ class MeekroReplacer extends MeekroOperation implements Replaces {
 
     public function replace_no_explain($value) {
         return $this->db->replace(
-            $this->table->name(), 
+            $this->table_expr(), 
             $this->table->row_from_entity($value)
         );
     }

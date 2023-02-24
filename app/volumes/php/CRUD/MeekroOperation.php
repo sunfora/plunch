@@ -21,7 +21,7 @@ abstract class MeekroOperation implements Explains {
         return $this->match_error_case($e)?->explain_in_default_way();
     }
 
-    protected function table_expr() {
+    protected function table_expr(): string {
         return '`' . $this->table->name() . '`';
     }
 

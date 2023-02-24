@@ -19,7 +19,7 @@ class MeekroDeleter extends MeekroOperation implements Deletes {
 
     public function delete_no_explain($value) {
         return $this->db->delete(
-            $this->table->name(), '%l', 
+            $this->table_expr(), '%l', 
             $this->table->locate($value)
         );
     }
