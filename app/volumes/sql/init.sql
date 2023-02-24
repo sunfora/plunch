@@ -83,3 +83,18 @@ CREATE TABLE IF NOT EXISTS
                 ON DELETE RESTRICT 
                 ON UPDATE CASCADE
     );
+
+CREATE TABLE IF NOT EXISTS
+    `planner/playlists`
+    (
+        user CHAR(128),
+        name VARCHAR(128),
+        priority INT NOT NULL CHECK (0 < priority AND priority <= 10),
+
+        PRIMARY KEY (user, name),
+
+        CONSTRAINT `planner/playlists/fk_playlist` FOREIGN KEY (user, name)
+            REFERENCES `playlist/playlists` (user, name)
+                ON DELETE CASCADE 
+                ON UPDATE CASCADE
+    )

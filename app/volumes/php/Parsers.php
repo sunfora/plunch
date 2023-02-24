@@ -140,6 +140,18 @@ function time(): Parsica\Parser {
 
 function video_list(): Parsica\Parser {
     $start = Parsica\string(":");
-    $list = Parsica\sepBy(Parsica\skipSpace(), arg());
+    $list = Parsica\sepBy(Parsica\skipSpace1(), arg());
     return $start->then(Parsica\skipSpace())->then($list);
+}
+
+function priority(): Parsica\Parser {
+    $in10 = fn ($x) => (0 < $x && $x <= 10);
+    return filt($in10, positive_integer());
+}
+
+function planned(): Parsica\Parser {
+    return Parsica\any(
+        collect_with_spaces(arg(), priority()),
+        Parsica\collect(arg(), Parsica\pure(5))
+    )->map(fn ($pl) => ["name" => $pl[0], "priority" => $pl[1]]);
 }

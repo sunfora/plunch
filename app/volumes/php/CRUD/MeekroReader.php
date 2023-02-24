@@ -47,4 +47,13 @@ class MeekroReader extends MeekroOperation implements Reads {
         );
         return \array_map($this->table->entity_from_row(...), $rows);
     }
+
+    public function count_where($locate_rows, $tail=""): int {
+        return \intval($this->db->queryFirstField(
+            "SELECT COUNT(*) FROM %l WHERE %l %l", 
+            $this->table_expr(),
+            $locate_rows,
+            $tail
+        ));
+    }
 }

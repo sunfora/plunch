@@ -134,6 +134,24 @@ $playlist_syntax = [
     ],
 ];
 
+$planner_syntax = [
+    "list_plan" => [
+        ["list", "plan"], []
+    ],
+    "plan" => [
+        ["plan"], ["planned"]
+    ],
+    "unplan" => [
+        ["unplan"], ["planned"]
+    ],
+    "renice" => [
+        ["renice"], ["planned"]
+    ],
+    "pick" => [
+        ["pick"], []
+    ]
+];
+
 $syntax = [
     "idle" => [
         [], []
@@ -156,7 +174,8 @@ $syntax = [
     ...$pinned_syntax,
     ...$video_timestamps_syntax,
     ...$pinned_timestamps_syntax,
-    ...$playlist_syntax
+    ...$playlist_syntax,
+    ...$planner_syntax
 ];
 
 $interpreter = new Interpreter($syntax, $core);
@@ -170,6 +189,7 @@ display(function () use ($interpreter) {
         } catch (Parsica\Parsica\ParserHasFailed $e) {
             echo $e->getMessage();
         } catch (mysqli_sql_exception $e) {
+            var_dump($e);
             echo "unexpected db failure: {$e->getCode()}";
         }
 });

@@ -5,12 +5,14 @@ require_once "User.php";
 require_once "Table.php";
 require_once "Video.php";
 require_once "Playlist.php";
+require_once "PlaylistPlanner.php";
 require_once "CRUD/Videos.php";
 require_once "CRUD/PinnedVideos.php";
 require_once "CRUD/Timestamps.php";
 require_once "CRUD/Playlists.php";
 require_once "CRUD/PlaylistMaps.php";
 require_once "CRUD/VideoByTimestamp.php";
+require_once "CRUD/PlannedPlaylists.php";
 
 use Plunch\Util\Table as Table;
 
@@ -26,6 +28,7 @@ final class Core {
         $this->pinned_videos = new CRUD\PinnedVideos($user, $db);
         $this->playlists = new CRUD\Playlists($user, $db);
         $this->videos_by_timestamp = new CRUD\VideoByTimestamp($user, $db);
+        $this->planned = new CRUD\PlannedPlaylists($user, $db);
     }
 
     // Main [
@@ -287,13 +290,15 @@ final class Core {
     // ]
 
     // Playlists [
-    private function repr_playlists(Array $pls): string {
+    private function repr_playlists(Array $pls) {
         $repr = fn ($p) => [$p->name()];
-        return Table\to_string(\array_map($repr, $pls));
+        return \array_map($repr, $pls);
     }
 
     public function list_playlists() {
-        return $this->repr_playlists($this->playlists->read_all());
+        $pls = $this->playlists->read_all();
+        $pls_repr = $this->repr_playlists($pls);
+        return Table\to_string($pls_repr);
     }
 
     public function add_playlist(string $name) {
@@ -321,11 +326,19 @@ final class Core {
     }
 
     public function clear_playlist(string $name) {
-        $this->db->startTransaction();
-        $this->delete_playlist($name);
-        $this->add_playlist($name);
-        $this->db->commit();
+        $pls = new Playlist($name);
+        $maps = new CRUD\PlaylistMaps($pls, $this->user, $this->db); 
+        $maps->delete_all();
         return "cleared playlist $name";
+    }
+
+    private function playlist_is_not_done(Playlist $pls) {
+        $maps = new CRUD\PlaylistMaps($pls, $this->user, $this->db); 
+        return $maps->has_unwatched();
+    }
+
+    private function playlist_is_done(Playlist $pls) {
+        return ! $this->playlist_is_not_done($pls);
     }
 
     private function status(Playlist $playlist) {
@@ -344,8 +357,6 @@ final class Core {
     }
 
     public function mend_playlist(string $name, Array $links) {
-        $this->db->startTransaction();
-
         $this->clear_playlist($name); 
 
         if ($links) {
@@ -358,8 +369,88 @@ final class Core {
             $maps->create(...$vmaps);
         }
 
-        $this->db->commit();
         return $this->list_playlist_videos($name);
     }    
     // ] 
+
+    // Planner [
+
+    private function plan_is_done(Array $planned) {
+        return $this->playlist_is_done($planned["playlist"]);
+    }
+
+    private function plan_is_not_done(Array $planned) {
+        return ! $this->plan_is_done($planned);
+    }
+
+    private function read_plan_splitted() {
+        $planned = $this->planned->read_all();
+        $result = ["active" => [], "done" => []];
+        foreach ($planned as $value) {
+            if ($this->plan_is_done($value)) {
+                $result["done"][] = $value;
+            } else {
+                $result["active"][] = $value;
+            }
+        }
+        return $result;
+    }
+
+    public function pick() {
+        $plan = $this->read_plan_splitted();
+        $playlist = (new PlaylistPlanner($plan["active"]))->pick();
+        $playlist = $this->playlists->read_with_videos($playlist);
+        foreach ($playlist as $video) {
+            if (! $video->is_watched() ) {
+                return $video->link(); 
+            }
+        }
+    }
+
+    private function repr_planned_part(Array $planned) {
+        $pls = \array_column($planned, "playlist");
+        $pri = \array_column($planned, "priority");
+        $repr_priority = fn ($x) => [\strval($x)];
+        $pri_repr = \array_map($repr_priority, $pri);
+        $pls_repr = $this->repr_playlists($pls);
+        return \array_map(\array_merge(...), $pri_repr, $pls_repr);
+    }
+
+    public function renice(Array $planned) {
+        $new = $this->planned->entity_from_row($planned);
+        $old = $this->planned->read($new);
+        $this->planned->update($old, $new);
+
+        $name = $old["playlist"]->name();
+        $old_pr = $old["priority"];
+        $new_pr = $new["priority"];
+
+        return "reniced $name, $old_pr -> $new_pr";
+    }
+
+    public function list_plan() {
+        $plan = $this->read_plan_splitted();
+        $result = "";
+        foreach(["active", "done"] as $part) {
+            $result .= $part . ":\n";
+            $result .= Table\to_string($this->repr_planned_part($plan[$part]));
+            $result .= "\n\n";
+        }
+        return $result;
+    }
+
+    public function plan(Array $planned) {
+        $pls = $this->planned->entity_from_row($planned);
+        $name = $pls["playlist"]->name();
+        $this->planned->create($pls);
+        return "planned $name";
+    }
+
+    public function unplan(Array $planned) {
+        $pls = $this->planned->entity_from_row($planned);
+        $name = $pls["playlist"]->name();
+        $this->planned->delete($pls);
+        return "removed $name from plan";
+    }
+    // ]
 }

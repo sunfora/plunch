@@ -52,7 +52,7 @@ final class MapsReader extends MeekroReader {
     }
 }
 
-final class PlaylistMaps implements DataBaseTable {
+final class PlaylistMaps implements DataBaseTable, \Countable {
     public const TABLE = "playlist/linked_list";
     
     private Videos $videos;
@@ -148,6 +148,10 @@ final class PlaylistMaps implements DataBaseTable {
     public function delete(Array $vmap) {
         return $this->deleter->delete($vmap);
     }
+    
+    public function delete_all() {
+        return $this->deleter->delete_where($this->locate_all());
+    }
     // ]
     
     // GeneralUpdate Trait [
@@ -157,6 +161,16 @@ final class PlaylistMaps implements DataBaseTable {
     // ]
     
     // Others [
+
+    public function count(): int {
+        return $this->reader->count_where($this->locate_all());
+    }
+
+    public function has_unwatched(): bool {
+        $where = $this->locate_all();
+        $where->add('watched=false');
+        return $this->reader->count_where($where, 'LIMIT 1') !== 0;
+    }
 
     public static function vmaps_from(iterable $list): Array {
         $vmaps = [];
