@@ -4,7 +4,6 @@ require_once "/vendor/autoload.php";
 require_once "Table.php";
 require_once "Video.php";
 require_once "User.php";
-require_once "CRUD/Timestamps.php";
 require_once "CRUD/TypecastRow.php";
 require_once "CRUD/DataBaseTable.php";
 
@@ -123,40 +122,6 @@ final class Videos implements DataBaseTable {
     // GeneralDelete Trait [
     public function delete(Video $video) {
         return $this->deleter->delete($video);
-    }
-    // ]
-    
-    // Other [
-
-    // TODO: remove this into separate class 
-    public function grep_timestamps(string $pattern) {
-        $schema_stamp = \array_map(fn ($x) => "a.".$x, Timestamps::SCHEMA);
-        $schema_video = \array_map(fn ($x) => "b.".$x, self::SCHEMA);
-        $comb_schema = \implode(', ', [...$schema_video, ...$schema_stamp]);
-
-        $query=<<<'SQL'
-            SELECT %l FROM `%l` AS a
-                CROSS JOIN `%l` AS b ON a.user=b.user AND a.link LIKE b.link
-                    WHERE a.user=%s AND a.name RLIKE %s
-        SQL;
-        
-        $results = $this->db->query(
-            $query,
-            $comb_schema,
-            Timestamps::TABLE,
-            self::TABLE,
-            $this->user->name(),
-            $pattern
-        );
-        
-        $cast = function ($row) {
-            $video = $this->entity_from_row($row);
-            $timestamps = new Timestamps($this->user, $video, $this->db);
-            $timestamp = $timestamps->entity_from_row($row);
-            return ["video" => $video, "timestamp" => $timestamp];
-        };
-
-        return \array_map($cast, $results);
     }
     // ]
 }

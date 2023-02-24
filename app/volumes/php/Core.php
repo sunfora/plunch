@@ -10,17 +10,22 @@ require_once "CRUD/PinnedVideos.php";
 require_once "CRUD/Timestamps.php";
 require_once "CRUD/Playlists.php";
 require_once "CRUD/PlaylistMaps.php";
+require_once "CRUD/VideoByTimestamp.php";
 
 use Plunch\Util\Table as Table;
 
 final class Core {
 
     private CRUD\Videos $videos;
+    private CRUD\PinnedVideos $pinned_videos;
+    private CRUD\Playlists $playlists;
+    private CRUD\VideoByTimestamp $videos_by_timestamp;
 
     public function __construct(private User $user, private $db) {
         $this->videos = new CRUD\Videos($user, $db);   
         $this->pinned_videos = new CRUD\PinnedVideos($user, $db);
         $this->playlists = new CRUD\Playlists($user, $db);
+        $this->videos_by_timestamp = new CRUD\VideoByTimestamp($user, $db);
     }
 
     // Main [
@@ -29,8 +34,7 @@ final class Core {
     }
 
     public function grep_timestamps($pattern) {
-        // todo: replace
-        $grepped = $this->videos->grep_timestamps($pattern);
+        $grepped = $this->videos_by_timestamp->grep($pattern);
         
         $timestamps = $this->repr_timestamps(
             \array_column($grepped, "timestamp")
