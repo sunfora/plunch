@@ -16,7 +16,16 @@ require_once "CRUD/Deletes.php";
 require_once "CRUD/MeekroUpdater.php";
 require_once "CRUD/Updates.php";
 
+require_once "CRUD/MeekroReader.php";
+require_once "CRUD/Reads.php";
+
 use Plunch\{User, Playlist};
+
+final class PlaylistReader extends MeekroReader {
+    protected function not_exists_message($playlist): string {
+        return "playlist {$playlist->name()} does not exist";
+    }   
+}
 
 final class Playlists implements DataBaseTable {
     
@@ -28,6 +37,7 @@ final class Playlists implements DataBaseTable {
     private Creates $creator;
     private Deletes $deleter;
     private Updates $updater;
+    private Reads $reader;
 
     public function __construct(
         private User $user, 
@@ -36,6 +46,7 @@ final class Playlists implements DataBaseTable {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
         $this->updater = new MeekroUpdater($this, $db);
+        $this->reader = new PlaylistReader($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -73,21 +84,19 @@ final class Playlists implements DataBaseTable {
 
     // GeneralRead Trait [
     public function read_if_exists(Playlist $playlist): ?Playlist {
-        return $this->general_read_if_exists($playlist);
+        return $this->reader->read_if_exists($playlist);
     }
 
     public function does_exist(Playlist $playlist): bool {
-        return $this->general_does_exist($playlist);
+        return $this->read_if_exists($playlist) !== null;
     }
     
     public function read(Playlist $playlist): Playlist {
-        return $this->general_read(
-            "playlist {$playlist->name()} does not exist", $playlist
-        );
+        return $this->reader->read($playlist);
     }
 
     public function read_all(): Array {
-        return $this->general_read_where($this->locate_all());
+        return $this->reader->read_where($this->locate_all());
     }
     // ]
 

@@ -5,9 +5,6 @@ require_once "CRUD/MeekroOperation.php";
 require_once "CRUD/Updates.php";
 
 class MeekroUpdater extends MeekroOperation implements Updates {
-    public function __construct(DataBaseTable $table, \MeekroDB $db) {
-        parent::__construct($table, $db);
-    }
 
     public function update($first, $second) {
         return $this->rethrow_explained(

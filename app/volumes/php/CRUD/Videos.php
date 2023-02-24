@@ -18,8 +18,17 @@ require_once "CRUD/Deletes.php";
 require_once "CRUD/MeekroUpdater.php";
 require_once "CRUD/Updates.php";
 
+require_once "CRUD/MeekroReader.php";
+require_once "CRUD/Reads.php";
+
 use Plunch\{Video, User};
 use Plunch\Util\Table as Table;
+
+final class VideoReader extends MeekroReader {
+    protected function not_exists_message($video): string {
+        return "video $video does not exist";
+    }
+}
 
 final class Videos implements DataBaseTable {
     public const TABLE = 'video/videos';
@@ -31,11 +40,13 @@ final class Videos implements DataBaseTable {
     private Creates $creator;
     private Deletes $deleter;
     private Updates $updater;
+    private Reads $reader;
 
     public function __construct(private User $user, private $db) {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
         $this->updater = new MeekroUpdater($this, $db);
+        $this->reader = new VideoReader($this, $db);
     }
 
     // TypecastRow Trait [
@@ -80,21 +91,21 @@ final class Videos implements DataBaseTable {
 
     // GeneralRead Trait [
     public function read_if_exists(Video $video): ?Video {
-        return $this->general_read_if_exists($video);
+        return $this->reader->read_if_exists($video);
     }
 
     public function does_exist(Video $video): bool {
-        return $this->general_does_exist($video);
+        return $this->read_if_exists($video) !== null;
     }
     
     public function read(Video $video): Video {
-        return $this->general_read("video $video does not exist", $video);
+        return $this->reader->read($video);
     }
 
     public function read_all(): Array {
         $where = new \WhereClause('and');
         $where->add('user=%s', $this->user->name());
-        return $this->general_read_where($where);
+        return $this->reader->read_where($where);
     }
 
     // ]

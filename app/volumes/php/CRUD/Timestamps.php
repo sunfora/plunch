@@ -17,8 +17,17 @@ require_once "CRUD/Deletes.php";
 require_once "CRUD/MeekroUpdater.php";
 require_once "CRUD/Updates.php";
 
+require_once "CRUD/MeekroReader.php";
+require_once "CRUD/Reads.php";
+
 use Plunch\{User, Video, Timestamp};
 use Plunch\Util\Table as Table;
+
+final class TimestampReader extends MeekroReader {
+    protected function not_exists_message($timestamp): string {
+        return "timestamp $timestamp does not exist";
+    }
+}
 
 final class Timestamps implements DataBaseTable {
     
@@ -30,6 +39,7 @@ final class Timestamps implements DataBaseTable {
     private Creates $creator;
     private Deletes $deleter;
     private Updates $updater;
+    private Reads $reader;
 
     public function __construct(
         private User $user, 
@@ -39,6 +49,7 @@ final class Timestamps implements DataBaseTable {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
         $this->updater = new MeekroUpdater($this, $db);
+        $this->reader = new TimestampReader($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -76,24 +87,22 @@ final class Timestamps implements DataBaseTable {
 
     // GeneralRead Trait [
     public function read_if_exists(Timestamp $timestamp): ?Timestamp {
-        return $this->general_read_if_exists($timestamp);
+        return $this->reader->read_if_exists($timestamp);
     }
 
     public function does_exist(Timestamp $timestamp): bool {
-        return $this->general_does_exist($timestamp);
+        return $this->read_if_exists($timestamp) !== null;
     }
     
     public function read(Timestamp $timestamp): Timestamp {
-        return $this->general_read(
-            "timestamp $timestamp does not exist", $timestamp
-        );
+        return $this->reader->read($timestamp);
     }
 
     public function read_all(): Array {
         $where = new \WhereClause('and');
         $where->add('user=%s', $this->user->name());
         $where->add('link LIKE %s', $this->video->link());
-        return $this->general_read_where($where, $tail="ORDER BY stamp ASC");
+        return $this->reader->read_where($where, $tail="ORDER BY stamp ASC");
     }
 
     // ]

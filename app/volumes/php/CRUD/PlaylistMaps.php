@@ -22,7 +22,38 @@ require_once "CRUD/Deletes.php";
 require_once "CRUD/MeekroUpdater.php";
 require_once "CRUD/Updates.php";
 
+require_once "CRUD/MeekroReader.php";
+require_once "CRUD/Reads.php";
+
 use Plunch\{User, Video, Playlist, InternalException};
+
+final class MapsReader extends MeekroReader {
+    public function __construct(private string $name, $table, $db) {
+        parent::__construct($table, $db);
+    }
+
+    protected function table_expr(): string {
+        $list = '`' . PlaylistMaps::TABLE . '`';
+        $videos = '`' . Videos::TABLE . '`';
+        return <<<SQL
+            $list LEFT JOIN $videos
+                ON $list.user=$videos.user AND $list.link=$videos.link
+        SQL;
+    }
+
+    protected function read_schema() {
+        $add_prefix = fn ($table) => fn ($field) => "`$table`." . $field;
+        $video = \array_map($add_prefix(Videos::TABLE), Videos::SCHEMA);
+        $rest = \array_map($add_prefix(PlaylistMaps::TABLE), ["parent"]);
+        $result = $this->make_schema_from([...$rest, ...$video]);
+        return $result;
+    }
+
+    protected function not_exists_message($video): string {
+        $link = \array_keys($video)[0];
+        return "no $link in playlist {$this->name}"; 
+    }
+}
 
 final class PlaylistMaps implements DataBaseTable {
     public const TABLE = "playlist/linked_list";
@@ -33,6 +64,7 @@ final class PlaylistMaps implements DataBaseTable {
     private Creates $creator;
     private Deletes $deleter;
     private Updates $updater;
+    private Reads $reader;
 
     public function __construct(
         private Playlist $playlist,
@@ -43,6 +75,7 @@ final class PlaylistMaps implements DataBaseTable {
         $this->creator = new MeekroCreator($this, $db);
         $this->deleter = new MeekroDeleter($this, $db);
         $this->updater = new MeekroUpdater($this, $db);
+        $this->reader = new MapsReader($this->playlist->name(), $this, $db);
     }
 
     // DataBaseTable Interface [
@@ -89,40 +122,21 @@ final class PlaylistMaps implements DataBaseTable {
 
     // GeneralRead Trait [
     
-    private function read_from() {
-        $list = '`' . self::TABLE . '`';
-        $videos = '`' . Videos::TABLE . '`';
-        return <<<SQL
-            $list LEFT JOIN $videos
-                ON $list.user=$videos.user AND $list.link=$videos.link
-        SQL;
-    }
-
-    private function read_schema() {
-        $add_prefix = fn ($table) => fn ($field) => "`$table`." . $field;
-        $video = \array_map($add_prefix(Videos::TABLE), Videos::SCHEMA);
-        $rest = \array_map($add_prefix(self::TABLE), ["parent"]);
-        $result = $this->make_schema_from([...$rest, ...$video]);
-        return $result;
-    }
 
     public function read_if_exists(Array $vmap): ?Array {
-        return $this->genereal_read_if_exists($vmap);
+        return $this->reader->read_if_exists($vmap);
     }
 
     public function read(Array $vmap): Array {
-        return $this->general_read(
-            "no such video in {$playlist->name()}", 
-            $vmap
-        );
+        return $this->reader->read($vmap);
     }
 
     public function does_exist(Array $vmap): bool {
-        return $this->general_does_exist($vmap);
+        return $this->read_if_exists($vmap) !== null;
     }
 
     public function read_all(): Array {
-        return $this->general_read_where($this->locate_all());
+        return $this->reader->read_where($this->locate_all());
     } 
 
     // ]

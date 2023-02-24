@@ -5,9 +5,6 @@ require_once "CRUD/MeekroOperation.php";
 require_once "CRUD/Creates.php";
 
 class MeekroCreator extends MeekroOperation implements Creates {
-    public function __construct(DataBaseTable $table, \MeekroDB $db) {
-        parent::__construct($table, $db);
-    }
 
     protected function make_rows(...$values) {
         $make_row = $this->table->row_from_entity(...);

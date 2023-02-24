@@ -21,8 +21,17 @@ require_once "CRUD/Updates.php";
 require_once "CRUD/MeekroReplacer.php";
 require_once "CRUD/Replaces.php";
 
+require_once "CRUD/MeekroReader.php";
+require_once "CRUD/Reads.php";
+
 use Plunch\{Video, User};
 use Plunch\Util\Table as Table;
+
+final class PinnedReader extends MeekroReader {
+    protected function not_exists_message($entity): string {
+        return "nothing is pinned";
+    }
+}
 
 final class PinnedVideos implements DataBaseTable {
     use GeneralCRUD;
@@ -36,6 +45,7 @@ final class PinnedVideos implements DataBaseTable {
     private Deletes $deleter;
     private Updates $updater;
     private Replaces $replacer;
+    private Reads $reader;
 
     public function __construct(
         private User $user, 
@@ -46,6 +56,7 @@ final class PinnedVideos implements DataBaseTable {
         $this->deleter = new MeekroDeleter($this, $db);
         $this->updater = new MeekroUpdater($this, $db);
         $this->replacer = new MeekroReplacer($this, $db);
+        $this->reader = new PinnedReader($this, $db);
     }
 
     // DataBaseTable Interface [
@@ -79,15 +90,15 @@ final class PinnedVideos implements DataBaseTable {
 
     // GeneralRead Trait [
     public function read_if_exists(): ?Video {
-        return $this->general_read_if_exists(null);
+        return $this->reader->read_if_exists(null);
     }
 
     public function does_exist(): bool {
-        return $this->general_does_exist(null);
+        return $this->read_if_exists() !== null;
     }
     
     public function read(): Video {
-        return $this->general_read("nothing is pinned", null);
+        return $this->reader->read(null);
     }
     // ]
 
