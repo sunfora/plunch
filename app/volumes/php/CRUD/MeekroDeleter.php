@@ -5,8 +5,10 @@ require_once "CRUD/MeekroOperation.php";
 require_once "CRUD/Deletes.php";
 
 class MeekroDeleter extends MeekroOperation implements Deletes {
-    public function __construct(private DataBaseTable $table, private \MeekroDB $db) {}
-
+    public function __construct(DataBaseTable $table, \MeekroDB $db) {
+        parent::__construct($table, $db);
+    }
+    
     public function delete($value) {
         return $this->rethrow_explained(
             $this->delete_no_explain(...),

@@ -5,7 +5,9 @@ require_once "CRUD/MeekroOperation.php";
 require_once "CRUD/Replaces.php";
 
 class MeekroReplacer extends MeekroOperation implements Replaces {
-    public function __construct(private DataBaseTable $table, private \MeekroDB $db) {}
+    public function __construct(DataBaseTable $table, \MeekroDB $db) {
+        parent::__construct($table, $db);
+    }
 
     public function replace($value) {
         return $this->rethrow_explained(
