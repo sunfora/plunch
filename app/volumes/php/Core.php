@@ -329,7 +329,8 @@ final class Core {
         foreach ($playlist as $video) {
             $watched += (int) $video->is_watched();
         }
-        return $watched/count($playlist);
+        $length = count($playlist);
+        return $length === 0? 1 : $watched/$length; 
     }
 
     public function playlist_status(string $name) {
