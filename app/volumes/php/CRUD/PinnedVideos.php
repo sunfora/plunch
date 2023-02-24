@@ -5,8 +5,6 @@ require_once "User.php";
 require_once "Video.php";
 require_once "Table.php";
 require_once "CRUD/DataBaseTable.php";
-require_once "CRUD/GeneralCRUD.php";
-require_once "CRUD/GeneralReplace.php";
 require_once "CRUD/Videos.php";
 
 require_once "CRUD/MeekroCreator.php";
@@ -34,8 +32,6 @@ final class PinnedReader extends MeekroReader {
 }
 
 final class PinnedVideos implements DataBaseTable {
-    use GeneralCRUD;
-    use GeneralReplace;
 
     public const TABLE = 'user/pinned_videos';
     public const SCHEMA = ["link"];

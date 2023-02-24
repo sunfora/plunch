@@ -8,10 +8,7 @@ require_once "Video.php";
 require_once "Playlist.php";
 
 require_once "CRUD/Videos.php";
-require_once "CRUD/GeneralCRUD.php";
 require_once "CRUD/DataBaseTable.php";
-require_once "CRUD/ErrorCode.php";
-require_once "InternalException.php";
 
 require_once "CRUD/MeekroCreator.php";
 require_once "CRUD/Creates.php";
@@ -25,7 +22,7 @@ require_once "CRUD/Updates.php";
 require_once "CRUD/MeekroReader.php";
 require_once "CRUD/Reads.php";
 
-use Plunch\{User, Video, Playlist, InternalException};
+use Plunch\{User, Video, Playlist};
 
 final class MapsReader extends MeekroReader {
     public function __construct(private string $name, $table, $db) {
@@ -58,8 +55,6 @@ final class MapsReader extends MeekroReader {
 final class PlaylistMaps implements DataBaseTable {
     public const TABLE = "playlist/linked_list";
     
-    use GeneralCRUD;
-
     private Videos $videos;
     private Creates $creator;
     private Deletes $deleter;

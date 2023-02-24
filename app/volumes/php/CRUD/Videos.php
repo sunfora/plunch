@@ -4,7 +4,6 @@ require_once "/vendor/autoload.php";
 require_once "Table.php";
 require_once "Video.php";
 require_once "User.php";
-require_once "CRUD/GeneralCRUD.php";
 require_once "CRUD/Timestamps.php";
 require_once "CRUD/TypecastRow.php";
 require_once "CRUD/DataBaseTable.php";
@@ -34,7 +33,6 @@ final class Videos implements DataBaseTable {
     public const TABLE = 'video/videos';
     public const SCHEMA = ['link', 'watched'];
 
-    use GeneralCRUD; 
     use TypecastRow;
 
     private Creates $creator;

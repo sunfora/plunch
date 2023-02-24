@@ -6,7 +6,6 @@ require_once "Video.php";
 require_once "User.php";
 require_once "Timestamp.php";
 require_once "CRUD/DataBaseTable.php";
-require_once "CRUD/GeneralCRUD.php";
 
 require_once "CRUD/MeekroCreator.php";
 require_once "CRUD/Creates.php";
@@ -33,8 +32,6 @@ final class Timestamps implements DataBaseTable {
     
     public const TABLE = "video/timestamps";
     public const SCHEMA = ["stamp", "name"];
-
-    use GeneralCRUD;
 
     private Creates $creator;
     private Deletes $deleter;

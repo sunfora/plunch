@@ -4,7 +4,6 @@ require_once "/vendor/autoload.php";
 require_once "User.php";
 require_once "Playlist.php";
 require_once "CRUD/DataBaseTable.php";
-require_once "CRUD/GeneralCRUD.php";
 require_once "CRUD/PlaylistMaps.php";
 
 require_once "CRUD/MeekroCreator.php";
@@ -31,8 +30,6 @@ final class Playlists implements DataBaseTable {
     
     public const TABLE = "playlist/playlists";
     public const SCHEMA = ["name"];
-
-    use GeneralCRUD;
 
     private Creates $creator;
     private Deletes $deleter;
