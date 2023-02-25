@@ -24,14 +24,18 @@ services:
             - ./volumes/composer/vendor:/vendor
             - ./configs/php-fpm/www.conf:/usr/local/etc/php-fpm.d/www.conf
             - ./logs/php-fpm:/var/log
+        env_file:
+            - ./configs/php-fpm/vk-api.env
     entry:
         image: nginx:latest
         depends_on: 
             php-cgi:
                 condition: service_started
         ports:
-            - "8080:80"
+            - "80:80"
+            - "443:443"
+            - "127.0.0.1:85:85"
         volumes:
-            - ./volumes/php:/app
+            - ./volumes/php/index.php:/app/index.php
             - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf
             - ./logs/nginx:/var/log/nginx
