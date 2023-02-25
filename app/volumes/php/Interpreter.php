@@ -1,4 +1,6 @@
 <?
+namespace Plunch;
+
 require "/vendor/autoload.php";
 require_once "Parsers.php";
 
@@ -11,7 +13,7 @@ final class Interpreter
     }
 
     private static function arg_parser_from($spec) {
-        return Parsers\collect_with_spaces(...array_map(fn ($c) => "Parsers\\$c"(), $spec));
+        return Parsers\collect_with_spaces(...array_map(fn ($c) => "Plunch\\Parsers\\$c"(), $spec));
     }
 
     private static function cmd_parser_from($spec) {

@@ -1,5 +1,5 @@
 <?
-namespace Parsers;
+namespace Plunch\Parsers;
 
 require "/vendor/autoload.php";
 use \Parsica\Parsica as Parsica;
