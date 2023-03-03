@@ -85,7 +85,7 @@ final class PlaylistMaps implements DataBaseTable, \Countable {
     public function locate($vmap) {
         $video = \array_values($vmap)[0];
         $where = $this->locate_all();
-        $where->add('`%l`.link LIKE %s', self::TABLE, $video->link()); 
+        $where->add('`%l`.link=%s', self::TABLE, $video->link()); 
         return $where; 
     }
    

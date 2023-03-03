@@ -67,7 +67,7 @@ final class Timestamps implements DataBaseTable {
     public function locate($timestamp) {
         $where = new \WhereClause('AND');
         $where->add('user=%s', $this->user->name());
-        $where->add('link LIKE %s', $this->video->link());
+        $where->add('link=%s', $this->video->link());
         $where->add('stamp=%s', $timestamp->strtime());
         return $where;
     }
@@ -96,9 +96,9 @@ final class Timestamps implements DataBaseTable {
     }
 
     public function read_all(): Array {
-        $where = new \WhereClause('and');
+        $where = new \WhereClause('AND');
         $where->add('user=%s', $this->user->name());
-        $where->add('link LIKE %s', $this->video->link());
+        $where->add('link=%s', $this->video->link());
         return $this->reader->read_where($where, $tail="ORDER BY stamp ASC");
     }
 

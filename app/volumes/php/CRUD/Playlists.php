@@ -66,7 +66,7 @@ final class Playlists implements DataBaseTable {
 
     public function locate($playlist) {
         $where = $this->locate_all();
-        $where->add('name LIKE %s', $playlist->name());
+        $where->add('name=%s', $playlist->name());
         return $where;
     }
 

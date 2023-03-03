@@ -1,4 +1,5 @@
 <?
+try {
 require_once "CLI.php";
 require "cmd-form.php";
 
@@ -15,3 +16,6 @@ display(function () use ($plunch) {
     ["cmd" => $cmd] = $_POST;
     return $plunch->run($cmd);
 });
+} catch (\Throwable $e) {
+	var_dump($e);
+}

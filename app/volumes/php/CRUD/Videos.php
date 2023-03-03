@@ -68,10 +68,10 @@ final class Videos implements DataBaseTable {
             "link" => "{$video->link()}"
         ];
     }
-    
+
     public function locate($video) {
         $where = new \WhereClause('AND');
-        $where->add('link LIKE %s', $video->link());
+        $where->add("link=%s", $video->link());
         $where->add('user=%s', $this->user->name());
         return $where;
     }

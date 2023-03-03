@@ -17,7 +17,7 @@ final class VideoByTimestampReader extends MeekroReader {
     protected function table_expr(): string {
         $join = <<<'SQL'
             `%l` AS a CROSS JOIN `%l` AS b 
-                ON a.user=b.user AND a.link LIKE b.link
+                ON a.user=b.user AND a.link=b.link
         SQL;
         return $this->db->parse(
             $join, Timestamps::TABLE, Videos::TABLE
@@ -52,8 +52,8 @@ final class VideoByTimestamp implements DataBaseTable {
     
     public function locate($entity) {
         $where = new \WhereClause('AND');
-        $where->add('b.link LIKE %s', $entity["video"]->link());
-        $where->add('a.name LIKE %s', $entity["timestamp"]->name());
+        $where->add('b.link=%s', $entity["video"]->link());
+        $where->add('a.name=%s', $entity["timestamp"]->name());
         $where->add('a.user=%s', $this->user->name());
         return $where;
     }

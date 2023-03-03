@@ -1,5 +1,7 @@
 CREATE DATABASE IF NOT EXISTS 
-    plunch;
+    plunch
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_nopad_bin;
 
 USE plunch;
 
